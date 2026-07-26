@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:latlong2/latlong.dart';
 import 'package:map_kit/models/poly_line_model.dart';
 import 'package:map_kit/models/poly_line_point_model.dart';

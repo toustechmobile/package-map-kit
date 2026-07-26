@@ -66,24 +66,39 @@ class _FlutterMapWidgetState extends State<FlutterMapWidget> {
   void initState() {
     super.initState();
 
+    if (widget.initialCenter == null || widget.initialCenter!.latitude.isNaN || widget.initialCenter!.longitude.isNaN) {
+      widget.initialCenter = const LatLng(35.6892, 51.3890);
+    }
+
+    widget.markers?.removeWhere((m) => m.latitude.isNaN || m.longitude.isNaN);
+    widget.circles?.removeWhere((c) => c.latitude.isNaN || c.longitude.isNaN);
+    widget.polyLines?.removeWhere((line) {
+      if (line.points == null || line.points!.isEmpty) return true;
+      return line.points!.any((p) => p.latitude.isNaN || p.longitude.isNaN);
+    });
+    if (widget.userMarker != null && (widget.userMarker!.latitude.isNaN || widget.userMarker!.longitude.isNaN)) {
+      widget.userMarker = null;
+    }
+
     if (widget.uiMapController != null) {
       widget.uiMapController!.addMarkers = (List<MarkerModel> markers) {
-        // defer update until after current frame
         if (!mounted) return;
+        final safeMarkers = markers.where((m) => !m.latitude.isNaN && !m.longitude.isNaN).toList();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          widget.markers!.addAll(markers);
+          widget.markers!.addAll(safeMarkers);
           setState(() {});
         });
       };
 
       widget.uiMapController!.addCircles = (List<CircleModel> circles) {
         if (!mounted) return;
+        final safeCircles = circles.where((m) => !m.latitude.isNaN && !m.longitude.isNaN).toList();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          widget.circles!.addAll(circles);
+          widget.circles!.addAll(safeCircles);
           // also add new hidden markers for the new circles
-          _circleMarkers.addAll(circles.map((circle) => MarkerModel(
+          _circleMarkers.addAll(safeCircles.map((circle) => MarkerModel(
                 latitude: circle.latitude,
                 longitude: circle.longitude,
                 data: '',
@@ -97,15 +112,23 @@ class _FlutterMapWidgetState extends State<FlutterMapWidget> {
 
       widget.uiMapController!.addPolyline = (List<PolyLineModel> polyLines) {
         if (!mounted) return;
+        final safePolyLines = polyLines.where((line) {
+          if (line.points == null || line.points!.isEmpty) return false;
+          return !line.points!.any((point) => point.latitude.isNaN || point.longitude.isNaN);
+        }).toList();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          widget.polyLines!.addAll(polyLines);
+          widget.polyLines!.addAll(safePolyLines);
           setState(() {});
         });
       };
 
       widget.uiMapController!.moveCamera = (MoveModel moveModel) {
         if (!mounted) return;
+        if (moveModel.latitude.isNaN || moveModel.longitude.isNaN) {
+          debugPrint('CRITICAL: Attempted to move camera to NaN coordinates.');
+          return;
+        }
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           _mapController.move(
@@ -118,12 +141,18 @@ class _FlutterMapWidgetState extends State<FlutterMapWidget> {
 
       widget.uiMapController!.fitBounds = (MapBoundsModel mapBoundsModel) {
         if (!mounted || mapBoundsModel.points.isEmpty) return;
+
+        final validPoints = mapBoundsModel.points.where((p) => !p.latitude.isNaN && !p.longitude.isNaN).toList();
+
+        if (validPoints.isEmpty) return;
+
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted || mapBoundsModel.points.isEmpty) return;
           _mapController.fitCamera(
             CameraFit.bounds(
-              bounds: LatLngBounds.fromPoints(mapBoundsModel.points),
+              bounds: LatLngBounds.fromPoints(validPoints),
               padding: EdgeInsets.all(mapBoundsModel.padding),
+              maxZoom: 18
             ),
           );
         });
@@ -131,6 +160,7 @@ class _FlutterMapWidgetState extends State<FlutterMapWidget> {
 
       widget.uiMapController!.setUserLocation = (userMarker) {
         if (!mounted) return;
+        if (userMarker.latitude.isNaN || userMarker.longitude.isNaN) return;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           widget.userMarker = userMarker;
@@ -231,6 +261,8 @@ class _FlutterMapWidgetState extends State<FlutterMapWidget> {
       options: MapOptions(
           initialCenter: widget.initialCenter!,
           initialZoom: widget.zoom ?? 13,
+          minZoom: 2,
+          maxZoom: 18,
           onTap: _handleMapTap,
           onLongPress: _handleMapLongPress,
           onMapEvent: (MapEvent event) {
