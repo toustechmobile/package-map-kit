@@ -259,6 +259,15 @@ class _FlutterMapWidgetState extends State<FlutterMapWidget> {
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
+        // onPositionChanged: (camera, hasGesture) {
+        //   print("Testtt");
+        //   print("zoom: ${camera.zoom}");
+        //   print("center: ${camera.center.toString()}");
+        //   print("rotation: ${camera.rotation}");
+        //   print("crs: ${camera.crs.toString()}");
+        //   print("visibleBounds: ${camera.visibleBounds}");
+        //   print(hasGesture);
+        // },
           initialCenter: widget.initialCenter!,
           initialZoom: widget.zoom ?? 13,
           minZoom: 2,

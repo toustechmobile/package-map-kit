@@ -221,7 +221,7 @@ class _MapExampleScreenState extends State<MapExampleScreen> {
             initialCenter: initialCenter,
             isDarkMode: isDarkMode,
             zoom: 15,
-            // markers: List.from(initialMarkers),
+            markers: List.from(initialMarkers),
             onMarkerTap: (markerData, point) {
               if (markerData is MarkerModel) {
                 _showSnackBar("Tapped Marker: ${markerData.data ?? 'Unknown'}", context);
