@@ -292,11 +292,12 @@ class _MapExampleScreenState extends State<MapExampleScreen> {
             left: 24,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
               children: [
-                FloatingActionButton.extended(
+                FloatingActionButton(
                   onPressed: requestEnableGps,
-                  icon: const Icon(Icons.dashboard_customize),
-                  label: const Text("Controls"),
+                  child: const Icon(Icons.gps_fixed_rounded),
                 ),
                 FloatingActionButton.extended(
                   onPressed: _openControlPanel,
