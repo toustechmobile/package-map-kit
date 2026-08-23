@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Marker icons are resolved at runtime via reflection
+  (R.drawable::class.java.getField(name) in MarkerHelper.kt),
+  so the resource shrinker cannot see these references and would
+  strip them in release builds (minifyEnabled + shrinkResources).
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/arrow,
+        @drawable/circle,
+        @drawable/current_location,
+        @drawable/end_point,
+        @drawable/gps,
+        @drawable/ic_add_user,
+        @drawable/ic_map_branch_icon,
+        @drawable/ic_map_tour_completed_icon,
+        @drawable/ic_map_tour_in_progress_icon,
+        @drawable/ic_map_tour_no_meet_icon,
+        @drawable/ic_map_tour_waiting_icon,
+        @drawable/ic_marker_blue,
+        @drawable/ic_market_marker,
+        @drawable/no_gps,
+        @drawable/pause" />
